@@ -12,7 +12,7 @@ print(ecg)
 
 # Calculate the number of samples required for 4 seconds
 sampling_frequency = 360  # Replace with the actual sampling frequency
-duration_seconds = 30
+duration_seconds = 4
 num_samples_4_seconds = int(sampling_frequency * duration_seconds)
 
 # Plot the Entire 30-Minute EKG for MLII
