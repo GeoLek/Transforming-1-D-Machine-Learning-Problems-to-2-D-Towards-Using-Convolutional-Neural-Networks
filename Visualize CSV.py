@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # File Path for Patient 100's EKG Data
-record = "/your path here/MIT-BIH-CSV/100.csv"
+record = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Processed signals/Processed CSV files/100_merged_data.csv"
 
 # Reading ECG Data into a DataFrame
 ecg = pd.read_csv(record)
@@ -12,7 +12,7 @@ print(ecg)
 
 # Calculate the number of samples required for 4 seconds
 sampling_frequency = 360  # Replace with the actual sampling frequency
-duration_seconds = 4
+duration_seconds = 30
 num_samples_4_seconds = int(sampling_frequency * duration_seconds)
 
 # Plot the Entire 30-Minute EKG for MLII
