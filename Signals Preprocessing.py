@@ -128,3 +128,28 @@ for ecg_file in ecg_files:
     except FileNotFoundError:
         print(f"File not found for {ecg_file}. Skipping.")
         continue
+
+
+"""
+Preprocessing explained:
+
+Filtering: 
+A low-pass filter was applied to the original ECG signal. 
+This filter attenuates high-frequency noise, which is often present in raw ECG recordings. 
+The cutoff frequency chosen was 50 Hz. 
+The filtering process results in a smoother signal with reduced high-frequency noise.
+
+Resampling: 
+After filtering, the signal was resampled to achieve a uniform sampling rate of 360 Hz. 
+This step ensures that all records have the same time intervals between data points, making it easier to compare and analyze them consistently. 
+The original signal may have been sampled at a different rate, which would result in varying time intervals between samples.
+
+Segmentation: The ECG signal was segmented based on R-peak detection. 
+Each segment represents a portion of the ECG signal centered around an R-peak. 
+The chosen segment duration was 1 second (360 samples) with the R-peak in the middle. 
+Segmentation is crucial for isolating individual heartbeats, making it easier to analyze specific aspects of the ECG waveform.
+
+"""
+
+
+
