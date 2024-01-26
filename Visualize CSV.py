@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# File Path for Patient 100's EKG Data
+# File Path for a single record
 record = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Processed signals/Processed CSV files/100_merged_data.csv"
 
 # Reading ECG Data into a DataFrame
