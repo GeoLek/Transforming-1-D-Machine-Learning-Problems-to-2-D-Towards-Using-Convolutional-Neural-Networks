@@ -3,10 +3,10 @@ import pandas as pd
 import wfdb
 
 # Directory containing the MIT-BIH data files
-data_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/MIT-data'
+data_dir = '/your path here/MIT-data' #The folder with all the records (e.g 100.hea,100.atr ... 101.dat, 101.hea etc)
 
 # Output directory where you want to save the CSV files
-output_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/TRY-CSV'  # Specify your desired output directory
+output_dir = '/your path here/MIT-BIH-CSV'  # Specify your output directory
 
 # Ensure the output directory exists; create it if necessary
 if not os.path.exists(output_dir):
