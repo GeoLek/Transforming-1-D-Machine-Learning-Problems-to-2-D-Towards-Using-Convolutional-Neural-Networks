@@ -1,4 +1,4 @@
-1)Convert MIT-BIH to CSV.py
+1)Convert MIT-BIH to CSV.py #Record 102 and 104 were excluded due to the absence of the MLII lead to preserve homogeneity across all signals
 2)Signal Preprocessing.py
 3)Pan–Tompkins algorithm.py
 4)ECG Signal Segmentation.py
