@@ -33,7 +33,7 @@ fs = 360  # Sampling frequency
 # Paths
 ecg_dataset_path = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/MIT-BIH-CSV/Processed CSV files'
 qrs_dataset_path = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Pan–Tompkins algorithm/QRS complexes'
-output_folder = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/'
+output_folder = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Segmentation results'
 
 # Make sure the output folder exists
 os.makedirs(output_folder, exist_ok=True)
