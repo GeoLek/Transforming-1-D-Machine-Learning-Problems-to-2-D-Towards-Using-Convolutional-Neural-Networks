@@ -2,10 +2,10 @@ import os
 import pandas as pd
 
 # Define the input folder where the processed CSV files are located
-input_folder = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Processed signals"
+input_folder = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/MIT-BIH-CSV/Processed CSV files"
 
 # Define the output folder to save the merged CSV files
-output_folder = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Processed signals/Processed CSV files"
+output_folder = "/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/MIT-BIH-CSV/Processed CSV files/Combined"
 
 # Create the output folder if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)
