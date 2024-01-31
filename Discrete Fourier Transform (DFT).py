@@ -43,5 +43,5 @@ def create_and_save_dft_images(input_folder, output_folder, target_shape=(224, 2
             ecg_pil.save(os.path.join(output_folder, image_filename))
 
 input_folder = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Segmentation results/Normal beats'
-output_folder = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Discrete Fourier Transform (DFT):/2D Images'
+output_folder = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Discrete Fourier Transform (DFT)/2D Images'
 create_and_save_dft_images(input_folder, output_folder)
