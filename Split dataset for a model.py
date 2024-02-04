@@ -16,7 +16,7 @@ os.makedirs(validation_dir, exist_ok=True)
 os.makedirs(test_dir, exist_ok=True)
 
 # List of all files in the dataset directory
-file_list = [f'normal_{i}.png' for i in range(36327)]  # Adjust the range based on your dataset size
+file_list = [f'paced_{i}.png' for i in range(2137)]  # Adjust the range based on your dataset size
 
 # Shuffle the file list
 random.shuffle(file_list)
@@ -40,6 +40,11 @@ for i, file_name in enumerate(file_list):
     else:
         dst_dir = test_dir
     dst_path = os.path.join(dst_dir, file_name)
-    shutil.move(src_path, dst_path)
 
-print(f"Dataset split into {train_ratio * 100}% train, {validation_ratio * 100}% validation, and {test_ratio * 100}% test.")
+    try:
+        shutil.move(src_path, dst_path)
+    except FileNotFoundError:
+        print(f"Warning: {file_name} not found, skipping.")
+
+print(
+    f"Dataset split into {train_ratio * 100}% train, {validation_ratio * 100}% validation, and {test_ratio * 100}% test.")
