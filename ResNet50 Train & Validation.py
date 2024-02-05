@@ -7,9 +7,10 @@ from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from sklearn.utils.class_weight import compute_class_weight
 
 # Define the base directory where all output files will be saved
-output_base_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Reshaping Method/output'
+output_base_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Discrete Fourier Transform (DFT)/output'
 
 # Create an output directory specific to this training run
 output_dir = os.path.join(output_base_dir, 'training_run_1')
@@ -21,8 +22,8 @@ training_history_path = os.path.join(output_dir, 'training_history.csv')
 log_path = os.path.join(output_dir, 'training_log.txt')
 
 # Paths to training and validation directories
-train_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Reshaping Method/train'
-validation_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Reshaping Method/validation'
+train_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Discrete Fourier Transform (DFT)/train'
+validation_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/Dimension Transformation/Discrete Fourier Transform (DFT)/validation'
 
 # Function to generate file paths and labels
 def generate_file_paths_and_labels(directory):
@@ -30,34 +31,29 @@ def generate_file_paths_and_labels(directory):
     labels = []
     for file_name in os.listdir(directory):
         file_path = os.path.join(directory, file_name)
-        if file_name.startswith("normal"):
-            file_paths.append(file_path)
-            labels.append("normal")
-        elif file_name.startswith("paced"):
-            file_paths.append(file_path)
-            labels.append("paced")
+        label = "normal" if "normal" in file_name else "paced"
+        file_paths.append(file_path)
+        labels.append(label)
     return file_paths, labels
 
 # Generate file paths and labels for training and validation
 train_image_paths, train_labels = generate_file_paths_and_labels(train_dir)
 validation_image_paths, validation_labels = generate_file_paths_and_labels(validation_dir)
 
-# Creating DataFrames that include paths and labels
-train_df = pd.DataFrame({
-    'filename': train_image_paths,
-    'label': train_labels
-})
+# Convert labels to binary format
+labels_binary = np.array([0 if label == 'normal' else 1 for label in train_labels])
 
-validation_df = pd.DataFrame({
-    'filename': validation_image_paths,
-    'label': validation_labels
-})
+# Calculate class weights
+class_weights = compute_class_weight('balanced', classes=np.unique(labels_binary), y=labels_binary)
+class_weight_dict = {i: weight for i, weight in enumerate(class_weights)}
 
-# Create data generators
+# Data generators
 train_datagen = ImageDataGenerator(rescale=1./255)
 validation_datagen = ImageDataGenerator(rescale=1./255)
 
-# Adjust the data generators to use the DataFrame with labels
+train_df = pd.DataFrame({'filename': train_image_paths, 'label': train_labels})
+validation_df = pd.DataFrame({'filename': validation_image_paths, 'label': validation_labels})
+
 train_generator = train_datagen.flow_from_dataframe(
     dataframe=train_df,
     directory=None,  # Paths are absolute
@@ -96,11 +92,12 @@ model = Model(inputs=base_model.input, outputs=predictions)
 # Compile the model
 model.compile(optimizer=Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
-# Model Training
+# Model Training with class weights
 history = model.fit(
     train_generator,
-    epochs=10,
+    epochs=5,
     validation_data=validation_generator,
+    class_weight=class_weight_dict,  # Apply the calculated class weights
     callbacks=[
         tf.keras.callbacks.ModelCheckpoint(model_checkpoint_path, monitor='val_accuracy', save_best_only=True, mode='max', verbose=1),
         tf.keras.callbacks.CSVLogger(training_history_path),
