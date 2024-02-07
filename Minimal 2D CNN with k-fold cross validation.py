@@ -13,8 +13,8 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 
 # Define paths
-data_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Short-Time Fourier Transform (STFT)/train'  # Update this path
-output_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Short-Time Fourier Transform (STFT)/output'  # Update this path
+data_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Continuous Wavelet Transform (CWT)/train'  # Update this path
+output_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Continuous Wavelet Transform (CWT)/output'  # Update this path
 
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -58,7 +58,7 @@ for train, test in kfold.split(images, labels_encoded):
     ])
 
     # Compile the model
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Define callbacks
     checkpoint_path = os.path.join(output_dir, f'best_model_fold_{fold_no}.h5')
@@ -66,8 +66,8 @@ for train, test in kfold.split(images, labels_encoded):
 
     # Fit data to model
     history = model.fit(images[train], labels_categorical[train],
-                        batch_size=32,
-                        epochs=10,  # Adjust epochs as needed
+                        batch_size=16,
+                        epochs=5,  # Adjust epochs as needed
                         verbose=1,
                         validation_data=(images[test], labels_categorical[test]),
                         callbacks=[model_checkpoint])
