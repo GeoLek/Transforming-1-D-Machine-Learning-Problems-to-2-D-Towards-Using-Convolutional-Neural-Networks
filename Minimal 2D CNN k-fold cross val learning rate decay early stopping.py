@@ -12,8 +12,8 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 
 # Define paths
-data_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Continuous Wavelet Transform (CWT)/train'  # Update this path
-output_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Continuous Wavelet Transform (CWT)/output'  # Update this path
+data_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Recurrence Plots/train'  # Update this path
+output_dir = '/home/orion/Geo/Projects/Transforming-1D-CNNs-to-2D-CNNs/k-fold cross validation/Recurrence Plots/output'  # Update this path
 
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -33,8 +33,8 @@ def load_dataset(directory, target_size=(224, 224)):
 
 # Learning rate schedule function
 def lr_schedule(epoch, lr):
-    decay_rate = 0.1
-    decay_step = 10
+    decay_rate = 0.001
+    decay_step = 1
     if epoch % decay_step == 0 and epoch:
         return lr * decay_rate
     return lr
@@ -70,12 +70,12 @@ for train, test in kfold.split(images, labels_encoded):
     checkpoint_path = os.path.join(output_dir, f'best_model_fold_{fold_no}.h5')
     model_checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_accuracy', save_best_only=True, verbose=1)
     lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1, restore_best_weights=True)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1, restore_best_weights=True)
 
     # Fit data to model
     history = model.fit(images[train], labels_categorical[train],
-                        batch_size=16,
-                        epochs=10,  # Adjust epochs as needed
+                        batch_size=8,
+                        epochs=5,  # Adjust epochs as needed
                         verbose=1,
                         validation_data=(images[test], labels_categorical[test]),
                         callbacks=[model_checkpoint, lr_scheduler, early_stopping])
