@@ -3,3 +3,4 @@
 3)Pan–Tompkins algorithm.py
 4)ECG Signal Segmentation.py
 5)Dimension transformation with all the methods
+6)Train & evaluate the performance of different 2D CNN models with each transformation method
