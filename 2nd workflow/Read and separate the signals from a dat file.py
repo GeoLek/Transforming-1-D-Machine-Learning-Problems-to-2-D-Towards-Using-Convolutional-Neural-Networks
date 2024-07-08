@@ -62,13 +62,14 @@ def process_record(record_number):
             ecg_data.at[idx, 'Annotation'] = symbol
             ecg_data.at[idx, 'Description'] = annotation_map.get(symbol, 'Unknown')
 
-        # Save the DataFrame as a CSV file in the output directory
+        # Save the main DataFrame as a CSV file in the output directory
         csv_filename = os.path.join(output_dir, f'{record_name}.csv')
         ecg_data.to_csv(csv_filename, index=False)
 
         print(f'Record {record_name} saved as {csv_filename}')
 
-        # Prepare text file content
+        # Prepare content for the text and additional CSV file
+        annotation_details = []
         txt_content = []
         txt_content.append(f"Record {record_name} saved as {csv_filename}")
         txt_content.append(f"Annotation samples for {record_name}: {ann_sample_indices[:10]}")
@@ -78,9 +79,20 @@ def process_record(record_number):
             symbol = ann_symbols[i]
             description = annotation_map.get(symbol, 'Unknown')
             time_stamp = time_ms[ann_sample_indices[i]]
-            annotation_info = f"Sample index: {ann_sample_indices[i]}, Time (ms): {time_stamp:.2f}, Symbol: {symbol}, Description: {description}, Channels: {', '.join(header.sig_name)}"
-            print(annotation_info)
-            txt_content.append(annotation_info)
+            annotation_info = {
+                'Sample index': ann_sample_indices[i],
+                'Time (ms)': time_stamp,
+                'Symbol': symbol,
+                'Description': description,
+                'Channels': ', '.join(header.sig_name)
+            }
+            for sig_name in header.sig_name:
+                annotation_info[sig_name] = ecg_data.at[ann_sample_indices[i], sig_name]
+
+            annotation_info_str = f"Sample index: {ann_sample_indices[i]}, Time (ms): {time_stamp:.2f}, Symbol: {symbol}, Description: {description}, Channels: {', '.join(header.sig_name)}, Signal Values: {[annotation_info[sig_name] for sig_name in header.sig_name]}"
+            print(annotation_info_str)
+            txt_content.append(annotation_info_str)
+            annotation_details.append(annotation_info)
 
         # Check if all desired annotations are present in the file
         present_annotations = set(ann_symbols)
@@ -100,6 +112,11 @@ def process_record(record_number):
         with open(txt_filename, 'w') as txt_file:
             for line in txt_content:
                 txt_file.write(line + "\n")
+
+        # Save the annotation details to an additional CSV file
+        annotation_details_df = pd.DataFrame(annotation_details)
+        annotation_csv_filename = os.path.join(output_dir, f'{record_name}_annotations.csv')
+        annotation_details_df.to_csv(annotation_csv_filename, index=False)
 
     except FileNotFoundError:
         print(f'Record {record_name} not found. Skipping...')
