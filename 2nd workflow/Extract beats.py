@@ -5,7 +5,7 @@ import os
 
 # Define the directory containing the MIT-BIH data files
 data_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/MIT-BIH Arrhythmia Database/mit-bih-arrhythmia-database-1.0.0'
-output_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/output'  # Specify your output directory
+output_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/output_beats'  # Specify your output directory
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -134,10 +134,16 @@ def process_record(record_number):
 
         # Extract beats and save to a separate CSV file
         beat_segments = extract_beats(record, annotations, signal)
-        beats_df = pd.DataFrame({
-            'Beat Segment': [seg[0] for seg in beat_segments],
+
+        # Create a DataFrame where each column represents a sample in the beat segment
+        max_len = max(len(seg[0]) for seg in beat_segments)
+        beat_data = {
             'Symbol': [seg[1] for seg in beat_segments]
-        })
+        }
+        for i in range(max_len):
+            beat_data[f'Sample_{i}'] = [seg[0][i] if i < len(seg[0]) else np.nan for seg in beat_segments]
+
+        beats_df = pd.DataFrame(beat_data)
         beats_csv_filename = os.path.join(output_dir, f'{record_name}_beats.csv')
         beats_df.to_csv(beats_csv_filename, index=False)
 
