@@ -25,11 +25,13 @@ def remove_baseline_wander(ecg_signal):
     return detrend(ecg_signal, type='linear')
 
 def normalize_signal(ecg_signal):
-    return (ecg_signal - np.mean(ecg_signal)) / np.std(ecg_signal)
+    mean_val = np.mean(ecg_signal)
+    std_val = np.std(ecg_signal)
+    return (ecg_signal - mean_val) / std_val
 
 def preprocess_ecg_signal(ecg_data):
     # Preprocess each lead in the DataFrame
-    for column in ecg_data.columns[2:]:  # Skipping 'Sample' and 'time_ms' columns
+    for column in ecg_data.columns[5:]:  # Skipping columns to process the signals
         ecg_data[column] = filter_noise(ecg_data[column])
         ecg_data[column] = remove_baseline_wander(ecg_data[column])
         ecg_data[column] = normalize_signal(ecg_data[column])
@@ -56,6 +58,7 @@ def process_record(record_number):
     try:
         # Load the header file to get channel names
         header = wfdb.rdheader(os.path.join(data_dir, record_name))
+        print(f"Columns from header file for record {record_name}: {header.sig_name}")
 
         # Load the ECG signal data
         record = wfdb.rdrecord(os.path.join(data_dir, record_name))
@@ -66,16 +69,19 @@ def process_record(record_number):
         num_samples = len(record.p_signal)
         time_ms = [1000 * i / sampling_frequency for i in range(num_samples)]
 
-        # Create a DataFrame with the signal data, "Sample," and "time_ms"
-        ecg_data = pd.DataFrame({'Sample': range(num_samples), 'time_ms': time_ms})
+        # Create a DataFrame with the signal data, "Sample index," and "Time (ms)"
+        ecg_data = pd.DataFrame({'Sample index': range(num_samples), 'Time (ms)': time_ms})
         for i in range(header.n_sig):
             ecg_data[header.sig_name[i]] = record.p_signal[:, i]
+
+        print(f"Columns in the ecg_data DataFrame for record {record_name}: {ecg_data.columns}")
 
         # Preprocess the ECG signals
         ecg_data = preprocess_ecg_signal(ecg_data)
 
         # Read the annotations
         annotations = wfdb.rdann(os.path.join(data_dir, record_name), 'atr')
+        print(f"Annotation columns for record {record_name}: {annotations.__dict__}")
 
         # Extract annotation sample indices and types
         ann_sample_indices = annotations.sample  # The indices of the annotations in the signal
@@ -91,13 +97,33 @@ def process_record(record_number):
         }
 
         # Initialize annotation and description columns with empty strings
-        ecg_data['Annotation'] = ''
+        ecg_data['Symbol'] = ''
         ecg_data['Description'] = ''
 
         # Add annotations and descriptions to the DataFrame
         for idx, symbol in zip(ann_sample_indices, ann_symbols):
-            ecg_data.at[idx, 'Annotation'] = symbol
+            ecg_data.at[idx, 'Symbol'] = symbol
             ecg_data.at[idx, 'Description'] = annotation_map.get(symbol, 'Unknown')
+
+        # Add the 'Channels' column
+        ecg_data['Channels'] = ', '.join(header.sig_name)
+
+        # Collect annotation details after preprocessing
+        annotation_details = []
+        for idx, symbol in zip(ann_sample_indices, ann_symbols):
+            annotation_info = {
+                'Sample index': idx,
+                'Time (ms)': time_ms[idx],
+                'Symbol': symbol,
+                'Description': annotation_map.get(symbol, 'Unknown'),
+                'Channels': ', '.join(header.sig_name)
+            }
+            for sig_name in header.sig_name:
+                annotation_info[sig_name] = ecg_data.at[idx, sig_name]
+            annotation_details.append(annotation_info)
+
+        # Convert annotation details to DataFrame
+        annotation_details_df = pd.DataFrame(annotation_details)
 
         # Save the main DataFrame as a CSV file in the output directory
         csv_filename = os.path.join(output_dir, f'{record_name}.csv')
@@ -105,54 +131,9 @@ def process_record(record_number):
 
         print(f'Record {record_name} saved as {csv_filename}')
 
-        # Prepare content for the text and additional CSV file
-        annotation_details = []
-        txt_content = []
-        txt_content.append(f"Record {record_name} saved as {csv_filename}")
-        txt_content.append(f"Annotation samples for {record_name}: {ann_sample_indices[:10]}")
-        txt_content.append(f"Annotation symbols for {record_name}: {ann_symbols[:10]}")
-
-        for i in range(len(ann_sample_indices)):
-            symbol = ann_symbols[i]
-            description = annotation_map.get(symbol, 'Unknown')
-            time_stamp = time_ms[ann_sample_indices[i]]
-            annotation_info = {
-                'Sample index': ann_sample_indices[i],
-                'Time (ms)': time_stamp,
-                'Symbol': symbol,
-                'Description': description,
-                'Channels': ', '.join(header.sig_name)
-            }
-            for sig_name in header.sig_name:
-                annotation_info[sig_name] = ecg_data.at[ann_sample_indices[i], sig_name]
-
-            annotation_info_str = f"Sample index: {ann_sample_indices[i]}, Time (ms): {time_stamp:.2f}, Symbol: {symbol}, Description: {description}, Channels: {', '.join(header.sig_name)}, Signal Values: {[annotation_info[sig_name] for sig_name in header.sig_name]}"
-            print(annotation_info_str)
-            txt_content.append(annotation_info_str)
-            annotation_details.append(annotation_info)
-
-        # Check if all desired annotations are present in the file
-        present_annotations = set(ann_symbols)
-        missing_annotations = set(desired_annotations) - present_annotations
-
-        if missing_annotations:
-            missing_info = f"Missing annotations in {record_name}: {missing_annotations}"
-            print(missing_info)
-            txt_content.append(missing_info)
-        else:
-            all_present_info = f"All desired annotations are present in {record_name}"
-            print(all_present_info)
-            txt_content.append(all_present_info)
-
-        # Save annotations to a text file
-        txt_filename = os.path.join(output_dir, f'{record_name}.txt')
-        with open(txt_filename, 'w') as txt_file:
-            for line in txt_content:
-                txt_file.write(line + "\n")
-
         # Save the annotation details to an additional CSV file
-        annotation_details_df = pd.DataFrame(annotation_details)
-        annotation_csv_filename = os.path.join(output_dir, f'{record_name}_annotations.csv')
+        annotation_csv_filename = os.path.join(output_dir, f'{record_name}_annotation_details.csv')
+        print(f"Saving annotation details to {annotation_csv_filename} with the first 5 rows:\n{annotation_details_df.head()}")
         annotation_details_df.to_csv(annotation_csv_filename, index=False)
 
         # Extract beats and save to a separate CSV file
