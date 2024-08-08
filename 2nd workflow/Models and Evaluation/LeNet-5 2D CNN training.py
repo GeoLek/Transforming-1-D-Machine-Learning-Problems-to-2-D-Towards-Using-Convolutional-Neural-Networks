@@ -17,7 +17,7 @@ else:
     print("No GPU found. Using CPU.")
 
 # Define the base directory where all output files will be saved
-output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/LeNet-5 2D CNN/Continuous Wavelet Transform (CWT)'
+output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/LeNet-5 2D CNN/Fast Fourier Transform (FFT)'
 output_dir = os.path.join(output_base_dir, 'training_run_1')
 os.makedirs(output_dir, exist_ok=True)
 
@@ -27,7 +27,7 @@ training_history_path = os.path.join(output_dir, 'training_history.csv')
 metrics_plot_path = os.path.join(output_dir, 'metrics_plot.png')
 
 # Paths to training and validation directories
-base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Continuous Wavelet Transform (CWT)'
+base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Fast Fourier Transform (FFT)'
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'val')
 
@@ -39,14 +39,14 @@ validation_datagen = ImageDataGenerator(rescale=1./255)
 train_generator = train_datagen.flow_from_directory(directory=train_dir,
                                                     target_size=(224, 224),
                                                     color_mode='grayscale',
-                                                    batch_size=32,
+                                                    batch_size=16,
                                                     class_mode='categorical',
                                                     shuffle=True)
 
 validation_generator = validation_datagen.flow_from_directory(directory=validation_dir,
                                                               target_size=(224, 224),
                                                               color_mode='grayscale',
-                                                              batch_size=32,
+                                                              batch_size=16,
                                                               class_mode='categorical',
                                                               shuffle=False)
 
@@ -69,6 +69,9 @@ model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentro
 # Print model summary
 model.summary()
 
+# Define early stopping
+early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1, restore_best_weights=True)
+
 # Model Training
 history = model.fit(train_generator,
                     epochs=10,
@@ -76,6 +79,7 @@ history = model.fit(train_generator,
                     callbacks=[
                         tf.keras.callbacks.ModelCheckpoint(model_checkpoint_path, monitor='val_accuracy', save_best_only=True, verbose=1),
                         tf.keras.callbacks.CSVLogger(training_history_path),
+                        early_stopping_callback
                     ])
 
 # Save the trained model
