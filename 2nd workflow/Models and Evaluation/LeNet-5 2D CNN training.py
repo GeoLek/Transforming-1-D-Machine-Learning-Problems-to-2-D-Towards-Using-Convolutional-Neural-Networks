@@ -17,17 +17,18 @@ else:
     print("No GPU found. Using CPU.")
 
 # Define the base directory where all output files will be saved
-output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/LeNet-5 2D CNN/Fast Fourier Transform (FFT)'
+output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/LeNet-5 2D CNN/Reshaping Method'
 output_dir = os.path.join(output_base_dir, 'training_run_1')
 os.makedirs(output_dir, exist_ok=True)
 
 # Define paths for various output files
 model_checkpoint_path = os.path.join(output_dir, 'model_checkpoint.h5')
 training_history_path = os.path.join(output_dir, 'training_history.csv')
-metrics_plot_path = os.path.join(output_dir, 'metrics_plot.png')
+accuracy_plot_path = os.path.join(output_dir, 'accuracy_plot.png')
+loss_plot_path = os.path.join(output_dir, 'loss_plot.png')
 
 # Paths to training and validation directories
-base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Fast Fourier Transform (FFT)'
+base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Reshaping Method'
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'val')
 
@@ -89,28 +90,26 @@ model.save(os.path.join(output_dir, 'final_model.h5'))
 history_df = pd.DataFrame(history.history)
 history_df.to_csv(training_history_path, index=False)
 
-plt.figure(figsize=(12, 6))
-
-# Plot accuracy
-plt.subplot(1, 2, 1)
+# Save accuracy plot
+plt.figure(figsize=(8, 6))
 plt.plot(history_df['accuracy'], label='Train Accuracy')
 plt.plot(history_df['val_accuracy'], label='Validation Accuracy')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.title('Training and Validation Accuracy')
 plt.legend()
+plt.savefig(accuracy_plot_path)
+plt.close()
 
-# Plot loss
-plt.subplot(1, 2, 2)
+# Save loss plot
+plt.figure(figsize=(8, 6))
 plt.plot(history_df['loss'], label='Train Loss')
 plt.plot(history_df['val_loss'], label='Validation Loss')
 plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.title('Training and Validation Loss')
 plt.legend()
-
-plt.tight_layout()
-plt.savefig(metrics_plot_path)
-plt.show()
+plt.savefig(loss_plot_path)
+plt.close()
 
 print("Training complete. Model saved and metrics plotted.")
