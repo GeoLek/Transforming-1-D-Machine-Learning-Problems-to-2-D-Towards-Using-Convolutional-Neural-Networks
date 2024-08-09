@@ -6,7 +6,6 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Input
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
-import scipy
 
 # Check if GPU is available
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -18,7 +17,7 @@ else:
     print("No GPU found. Using CPU.")
 
 # Define the base directory where all output files will be saved
-output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/Continuous Wavelet Transform (CWT)'
+output_base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/2D visualization'
 output_dir = os.path.join(output_base_dir, 'training_run_1')
 os.makedirs(output_dir, exist_ok=True)
 
@@ -28,7 +27,7 @@ training_history_path = os.path.join(output_dir, 'training_history.csv')
 metrics_plot_path = os.path.join(output_dir, 'metrics_plot.png')
 
 # Paths to training and validation directories
-base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Continuous Wavelet Transform (CWT)'
+base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/2D visualization'
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'val')
 
@@ -66,6 +65,9 @@ model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentro
 # Print model summary
 model.summary()
 
+# Define early stopping
+early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, verbose=1, restore_best_weights=True)
+
 # Model Training
 history = model.fit(train_generator,
                     epochs=10,
@@ -73,6 +75,7 @@ history = model.fit(train_generator,
                     callbacks=[
                         tf.keras.callbacks.ModelCheckpoint(model_checkpoint_path, monitor='val_accuracy', save_best_only=True, verbose=1),
                         tf.keras.callbacks.CSVLogger(training_history_path),
+                        early_stopping_callback
                     ])
 
 # Save the trained model
@@ -105,5 +108,31 @@ plt.legend()
 plt.tight_layout()
 plt.savefig(metrics_plot_path)
 plt.show()
+
+# Save plots
+accuracy_plot_path = os.path.join(output_dir, 'accuracy_plot.png')
+loss_plot_path = os.path.join(output_dir, 'loss_plot.png')
+
+plt.figure(figsize=(12, 6))
+
+# Save accuracy plot
+plt.plot(history_df['accuracy'], label='Train Accuracy')
+plt.plot(history_df['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+plt.savefig(accuracy_plot_path)
+plt.close()
+
+# Save loss plot
+plt.plot(history_df['loss'], label='Train Loss')
+plt.plot(history_df['val_loss'], label='Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Training and Validation Loss')
+plt.legend()
+plt.savefig(loss_plot_path)
+plt.close()
 
 print("Training complete. Model saved and metrics plotted.")
