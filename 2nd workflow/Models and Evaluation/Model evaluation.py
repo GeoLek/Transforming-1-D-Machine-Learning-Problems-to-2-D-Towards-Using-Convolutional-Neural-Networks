@@ -18,12 +18,11 @@ else:
     print("No GPU found. Using CPU.")
 
 # Define paths
-base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Reshaping Method'
+base_dir = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Data/Fast Fourier Transform (FFT)'
 test_dir = os.path.join(base_dir, 'test')
-model_path = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/Reshaping Method/training_run_1/final_model.h5'
-output_file_path = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/Reshaping Method/training_run_1/test_metrics.txt'
+model_path = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/Fast Fourier Transform (FFT)/training_run_1/final_model.h5'
+output_file_path = '/home/orion/Geo/Projects/Transforming-1-D-Machine-Learning-Problems-to-2-D-Towards-Using-Convolutional-Neural-Networks/Models results/Minimal 2D CNN/Fast Fourier Transform (FFT)/training_run_1/test_metrics.txt'
 confusion_matrix_path = os.path.join(os.path.dirname(output_file_path), 'confusion_matrix.png')
-metrics_plot_path = os.path.join(os.path.dirname(output_file_path), 'metrics_plot.png')
 
 # Ensure the output directory exists
 os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
@@ -39,7 +38,7 @@ test_generator = test_datagen.flow_from_directory(
     directory=test_dir,
     target_size=(224, 224),
     color_mode='grayscale',
-    batch_size=32,
+    batch_size=16,
     class_mode='categorical',
     shuffle=False
 )
@@ -65,13 +64,15 @@ print(f"Accuracy: {accuracy}\nPrecision: {precision}, Recall: {recall}, F1 Score
 
 # Compute and plot confusion matrix
 cm = confusion_matrix(true_classes, predicted_classes)
-plt.figure(figsize=(10, 8))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names, alpha=1.0, cbar=False)
-plt.title('Confusion Matrix')
-plt.ylabel('True Label')
-plt.xlabel('Predicted Label')
+plt.figure(figsize=(12, 10))  # Increase the figure size
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names, cbar=False, annot_kws={"size": 16})
+plt.title('Confusion Matrix', fontsize=16)
+plt.ylabel('True Label', fontsize=14)
+plt.xlabel('Predicted Label', fontsize=14)
 plt.tight_layout()
-plt.savefig(confusion_matrix_path, dpi=300)  # Save the confusion matrix to a file
+
+# Save the confusion matrix to a file
+plt.savefig(confusion_matrix_path, dpi=300)
 plt.close()
 
 # Generate the classification report
@@ -121,21 +122,4 @@ with open(output_file_path, 'w') as f:
 # Print the formatted report to the console
 print(formatted_report)
 
-# Plotting and saving metrics
-metrics = {
-    'Accuracy': accuracy,
-    'Precision': precision,
-    'Recall': recall,
-    'F1 Score': f1
-}
-
-plt.figure(figsize=(8, 6))
-plt.bar(metrics.keys(), metrics.values())
-plt.title('Evaluation Metrics')
-plt.xlabel('Metric')
-plt.ylabel('Value')
-plt.tight_layout()
-plt.savefig(metrics_plot_path)  # Save the metrics plot to a file
-plt.close()
-
-print("Evaluation complete. Metrics saved and confusion matrix plotted.")
+print("Evaluation complete. Metrics and confusion matrix saved.")
